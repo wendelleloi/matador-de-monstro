@@ -26,7 +26,7 @@
           | Ataque
         button.btn.especial-atack(@click="atack(true)")
           | Ataque Especial
-        button.btn.heal
+        button.btn.heal(@click="healAndHurt")
           | Curar
         button.btn.give-up(@click="running = false")
           | Desistir
@@ -65,6 +65,14 @@ export default {
       const plus = especial ? 5 : 0
       const hurt = this.getRandom(min + plus, max + plus)
       this[atr] = Math.max(this[atr] - hurt, 0)
+    },
+    healAndHurt () {
+      this.heal(10, 15)
+      this.hurt('playerLife', 7, 12, false)
+    },
+    heal (min, max) {
+      const heal = this.getRandom(min, max)
+      this.playerLife = Math.min(this.playerLife + heal, 100)
     },
     getRandom (min, max) {
       const value = Math.random() * (max - min) + min
