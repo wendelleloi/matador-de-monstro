@@ -32,7 +32,10 @@
           | Desistir
       button.btn.new-game(v-else @click="startGame")
         | Iniciar Jogo
-    .panel.logs
+    .panel.logs(v-if="logs.length")
+      ul
+        li.log(v-for="(log, index) in this.logs" :key="index" :class="log.cls")
+          | {{ log.text }}
 </template>
 
 <script>
@@ -43,7 +46,8 @@ export default {
     return {
       playerLife: 100,
       monsterLIfe: 100,
-      running: false
+      running: false,
+      logs: []
     }
   },
   computed: {
@@ -56,27 +60,35 @@ export default {
       this.running = true
       this.playerLife = 100
       this.monsterLIfe = 100
+      this.logs = []
     },
     atack (especial) {
-      this.hurt('playerLife', 7, 12, false)
-      this.hurt('monsterLIfe', 5, 10, especial)
+      this.hurt('monsterLIfe', 5, 10, especial, 'Jogador', 'Monstro', 'player')
+      if (this.monsterLIfe > 0) {
+        this.hurt('playerLife', 7, 12, false, 'Monstro', 'Jogador', 'monster')
+      }
     },
-    hurt (atr, min, max, especial) {
+    hurt (atr, min, max, especial, source, target, cls) {
       const plus = especial ? 5 : 0
       const hurt = this.getRandom(min + plus, max + plus)
       this[atr] = Math.max(this[atr] - hurt, 0)
+      this.registerLog(`${source} atingiu ${target} com ${hurt}.`, cls)
     },
     healAndHurt () {
       this.heal(10, 15)
-      this.hurt('playerLife', 7, 12, false)
+      this.hurt('playerLife', 7, 12, false, 'Monstro', 'Jogador', 'monster')
     },
     heal (min, max) {
       const heal = this.getRandom(min, max)
       this.playerLife = Math.min(this.playerLife + heal, 100)
+      this.registerLog(`Jogador ganhou força de ${heal}`, 'player')
     },
     getRandom (min, max) {
       const value = Math.random() * (max - min) + min
       return Math.round(value)
+    },
+    registerLog (text, cls) {
+      this.logs.unshift({ text, cls })
     }
   },
   watch: {
@@ -169,6 +181,33 @@ export default {
     .give-up{
       background-color: #bbb;
       color: #000;
+    }
+  }
+  .logs{
+    ul{
+      display: flex;
+      flex-direction: column;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li{
+      display: flex;
+      justify-content: center;
+      margin: 4px 0;
+      padding: 4px 0;
+      font-weight: 600;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      border-radius: 3px;
+    }
+    .player{
+      background-color: #4253afaa;
+      color: #fff;
+    }
+    .monster{
+      background-color: #e51c23aa;
+      color: #fff;
     }
   }
 }
