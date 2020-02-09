@@ -1,41 +1,57 @@
 <template lang="pug">
   #app
-    .panel.scores
-      .score
-        h1 Jogador
-        .life-bar
-          .life(
-            :class="{danger: playerLife < 20}"
-            :style="{width: playerLife + '%'}"
-          )
-        div {{ playerLife}}%
-      .score
-        h1 Monstro
-        .life-bar
-          .life(
-            :class="{danger: monsterLIfe < 20}"
-            :style="{width: monsterLIfe + '%'}"
-          )
-        div {{ monsterLIfe}}%
-    .panel.result(v-if="hasResult")
-      .win(v-if="monsterLIfe === 0") Você ganhou !!! :)
-      .lose(v-else) Você perdeu... :(
-    .panel.buttons
-      template(v-if="running")
-        button.btn.atack(@click="atack(false)")
-          | Ataque
-        button.btn.especial-atack(@click="atack(true)")
-          | Ataque Especial
-        button.btn.heal(@click="healAndHurt")
-          | Curar
-        button.btn.give-up(@click="running = false")
-          | Desistir
-      button.btn.new-game(v-else @click="startGame")
-        | Iniciar Jogo
-    .panel.logs(v-if="logs.length")
-      ul
-        li.log(v-for="(log, index) in this.logs" :key="index" :class="log.cls")
-          | {{ log.text }}
+    template(v-if="!isLogin")
+      .panel.login
+        .title
+          h1 Matador de Monstros
+        .form-login
+          input(v-model="namePlayer" placeholder="Digite seu nick" @keydown.enter="login(namePlayer, true)")
+          button(type="button" @click.prevent="login(namePlayer, true)")
+            | Entrar
+        .error(v-if="error")
+          p Digite algum nickname
+    template(v-if="isLogin")
+      .panel.scores
+        .score
+          h1 {{ namePlayer }}
+          .life-bar
+            .life(
+              :class="{danger: playerLife < 20}"
+              :style="{width: playerLife + '%'}"
+            )
+          div {{ playerLife}}%
+        .score
+          h1 Monstro
+          .life-bar
+            .life(
+              :class="{danger: monsterLIfe < 20}"
+              :style="{width: monsterLIfe + '%'}"
+            )
+          div {{ monsterLIfe}}%
+      .panel.result(v-if="hasResult")
+        .win(v-if="monsterLIfe === 0") Você ganhou !!! :)
+        .lose(v-else) Você perdeu... :(
+      .panel.buttons
+        template(v-if="running")
+          button.btn.atack(@click="atack(false)")
+            | Ataque
+          button.btn.especial-atack(@click="atack(true)")
+            | Ataque Especial
+          button.btn.heal(@click="healAndHurt")
+            | Curar
+          button.btn.give-up(@click="running = false")
+            | Desistir
+          button.btn.logof(@click="login(namePlayer, false)")
+            | Sair
+        template(v-else)
+          button.btn.new-game(@click="startGame")
+            | Iniciar Jogo
+          button.btn.logof(@click="login(namePlayer, false)")
+            | Sair
+      .panel.logs(v-if="logs.length")
+        ul
+          li.log(v-for="(log, index) in this.logs" :key="index" :class="log.cls")
+            | {{ log.text }}
 </template>
 
 <script>
@@ -47,7 +63,10 @@ export default {
       playerLife: 100,
       monsterLIfe: 100,
       running: false,
-      logs: []
+      logs: [],
+      namePlayer: '',
+      isLogin: false,
+      error: false
     }
   },
   computed: {
@@ -56,6 +75,16 @@ export default {
     }
   },
   methods: {
+    login (name, login) {
+      if (name.length) {
+        this.isLogin = login
+      } else if (name.length === 0) {
+        this.error = true
+      }
+      if (!login) {
+        this.namePlayer = ''
+      }
+    },
     startGame () {
       this.running = true
       this.playerLife = 100
@@ -107,13 +136,56 @@ export default {
 #app {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  flex: 1;
   .panel{
-    margin: 10px;
-    padding: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    width: 100%;
+  }
+  .login{
+    .title{
+      text-align: center;
+      padding-top: 20px;
+      h1{
+        font-weight: 300;
+        margin: 0;
+        padding: 0;
+        font-size: 1.5rem;
+      }
+    }
+    .form-login{
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      input{
+        margin: 20px 0;
+        padding: 5px 0 5px 5px;
+      }
+      button{
+        margin-bottom: 20px;
+        padding: 5px;
+        background-color: #259b24;
+        border-radius: 3px;
+        border: none;
+        &:hover{
+          background-color: #259b24aa;
+        }
+      }
+    }
+    .error{
+      color: #e51c23;
+      padding: 0 0 20px 20px;
+      p{
+        margin: 0;
+        padding: 0;
+      }
+    }
   }
   .scores {
     display: flex;
+    padding: 20px 0;
     .score{
       flex: 1;
       display: flex;
@@ -155,6 +227,8 @@ export default {
   .buttons{
     display: flex;
     justify-content: center;
+    padding: 20px 0;
+    margin: 20px 0;
     .btn{
       padding: 5px 15px;
       margin: 0 10px;
@@ -181,6 +255,10 @@ export default {
     .give-up{
       background-color: #bbb;
       color: #000;
+    }
+    .logof{
+      background-color: blueviolet;
+      color: #fff;
     }
   }
   .logs{
